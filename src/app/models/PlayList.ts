@@ -36,8 +36,11 @@ const playListSchema = new mongoose.Schema({
 ///
 
 // models
-const CourPlayList = mongoose.model("CourPlayList", playListSchema);
-const TDPlayList = mongoose.model("TDPlayList", playListSchema);
+const CourPlayList =
+	mongoose.models["CourPlayList"] ||
+	mongoose.model("CourPlayList", playListSchema);
+const TDPlayList =
+	mongoose.models["TDPlayList"] || mongoose.model("TDPlayList", playListSchema);
 ///
 
 export { CourPlayList, TDPlayList };

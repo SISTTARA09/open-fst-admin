@@ -1,37 +1,89 @@
-import { uploadVideo } from "@/app/utils/add/add-video";
+"use client";
+import { VideoFormFields } from "@/types/forms";
+import React, { LegacyRef, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 /// imports
 
 const AddSingleVideo = () => {
+	const [resMsg, setResMsg] = useState<string>("");
+	const { register, formState, handleSubmit } = useForm<VideoFormFields>({
+		defaultValues: {
+			semester: "semester",
+			branch: "branch",
+		},
+	});
+	const { errors } = formState;
+	const formRef = useRef<HTMLFormElement | null>(null);
+	///
+
+	async function onSubmit() {
+		const form: any = formRef.current;
+		const data = new FormData(form);
+		try {
+			const response = await fetch("/add/video/api", {
+				method: "POST",
+				body: data,
+			});
+			const resData = await response.json();
+			setResMsg(resData.message);
+		} catch (error: { message: string } | any) {
+			setResMsg(error.message);
+		}
+	}
+
 	return (
 		<>
-			<h2> Add a Video</h2>
+			<h2> Add a doc</h2>
 
-			<form className="form" action={uploadVideo}>
+			<form className="form" ref={formRef} onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-3 *:w-full">
 					{/* start branch  */}
 					<div className="field-container">
 						<label htmlFor="branch">branch</label>
-						<select name="branch" id="branch">
+						<select
+							{...register("branch", {
+								validate: {
+									blackList: function (fieldValue) {
+										return fieldValue !== "branch" || "choose a branch";
+									},
+								},
+							})}
+							id="branch"
+						>
 							<option hidden>branch</option>
 							<option value="mip">mip</option>
 							<option value="bcg">bcg</option>
 							<option value="gegm">gegm</option>
 						</select>
-						<p className="error branch"></p>
+						<p className="error">
+							{errors.branch && String(errors.branch.message)}{" "}
+						</p>
 					</div>
 					{/* end branch  */}
 
 					{/* start semester  */}
 					<div className="field-container">
 						<label htmlFor="semester">semester</label>
-						<select name="semester" id="semester">
+						<select
+							{...register("semester", {
+								validate: {
+									blackList: function (fieldValue) {
+										return fieldValue !== "semester" || "choose a semester";
+									},
+								},
+							})}
+							id="semester"
+							required
+						>
 							<option hidden>semester</option>
 							<option value="s1">s1</option>
 							<option value="s2">s2</option>
 							<option value="s3">s3</option>
 							<option value="s4">s4</option>
 						</select>
-						<p className="error semester"></p>
+						<p className="error semester">
+							{errors.semester && String(errors.semester.message)}
+						</p>
 					</div>
 					{/* end semester  */}
 				</div>
@@ -42,11 +94,18 @@ const AddSingleVideo = () => {
 						<label htmlFor="module">module</label>
 						<input
 							type="text"
-							name="module"
+							{...register("module", {
+								required: {
+									value: true,
+									message: "Enter the module!!",
+								},
+							})}
 							id="module"
 							placeholder="ex: algebre 2"
 						/>
-						<p className="error module"></p>
+						<p className="error">
+							{errors.module && String(errors.module.message)}
+						</p>
 					</div>
 					{/* end module  */}
 
@@ -68,29 +127,42 @@ const AddSingleVideo = () => {
 					<label htmlFor="title">title</label>
 					<input
 						type="text"
-						name="title"
+						{...register("title", {
+							required: {
+								value: true,
+								message: "Enter the title!!",
+							},
+						})}
 						id="title"
 						placeholder="document title"
 					/>
-					<p className="error title"></p>
+					<p className="error">
+						{errors.title && String(errors.title.message)}
+					</p>
 				</div>
 				{/* end title  */}
 
 				{/* start path */}
 				<div className="field-container">
-					<label htmlFor="path">video path</label>
+					<label htmlFor="path">path path</label>
 					<input
 						type="text"
-						name="path"
+						{...register("path", {
+							required: {
+								value: true,
+								message: "Enter the path!!",
+							},
+						})}
 						id="path"
-						placeholder="youtube video <_"
+						multiple={false}
 					/>
-					<p className="error path"></p>
+					<p className="error">{errors.path && String(errors.path.message)}</p>
 				</div>
 				{/* end path */}
 
 				<button type="submit">submit</button>
 			</form>
+			<div className="result">{resMsg}</div>
 		</>
 	);
 };

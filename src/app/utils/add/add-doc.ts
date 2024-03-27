@@ -1,82 +1,65 @@
-import { v2 as cloudinary } from "cloudinary";
-import { CourDoc, TDDoc } from "../../models/Doc";
+import { CourDoc, TDDoc } from "@/app/models/Doc";
+import { UpdateWriteOpResult } from "mongoose";
 /// imports
 
-cloudinary.config({
-	cloud_name: process.env.CLOUDINARY_NAME,
-	api_key: process.env.CLOUDINARY_API_KEY,
-	api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-//
-async function uploadFile(data: FormData) {
-	"use server";
+async function uploadToDb(
+	formValues: { [k: string]: FormDataEntryValue },
+	docURL: string | undefined
+) {
+	let updateResult: UpdateWriteOpResult;
+
+	// upload to mongo db
 	try {
-		const file: File | null = data.get("doc") as unknown as File;
-
-		if (!file) throw new Error("file is not exist!!");
-
-		const bytes = await file.arrayBuffer();
-		const buffer = Buffer.from(bytes);
-
-		const formValues = Object.fromEntries(data);
-
-		cloudinary.uploader
-			.upload_stream({ resource_type: "auto" }, async (error, result) => {
-				if (error) throw new Error("Error in uploading to cloudinary!!");
-				const docURL = result?.secure_url; // img url
-
-				// upload to mongo db
-				try {
-					switch (formValues.session) {
-						case "cour":
-							await CourDoc.updateOne(
-								{
-									module: String(formValues.module),
-									semester: String(formValues.semester),
-								},
-								{
-									$push: {
-										docs: {
-											title: String(formValues.title),
-											type: String(formValues.type),
-											doc: String(docURL),
-										},
-									},
-								}
-							);
-							break;
-
-						case "td":
-							await TDDoc.updateOne(
-								{
-									module: String(formValues.module),
-									semester: String(formValues.semester),
-								},
-								{
-									$push: {
-										docs: {
-											title: formValues.title,
-											type: formValues.type,
-											doc: docURL,
-										},
-									},
-								}
-							);
-							break;
-						default:
-							throw new Error("this session is not supported!!");
+		switch (formValues.session) {
+			case "cour":
+				updateResult = await CourDoc.updateOne(
+					{
+						module: String(formValues.module),
+						semester: String(formValues.semester),
+					},
+					{
+						$push: {
+							docs: {
+								title: String(formValues.title),
+								type: String(formValues.type),
+								doc: String(docURL),
+							},
+						},
 					}
-					console.log("file is uploaded to db");
-				} catch (error: any) {
-					console.log("error in uploading to db");
-					console.log(error.message);
-				}
-			})
-			.end(buffer);
-	} catch (error) {
-		console.log(error);
+				);
+				if (!updateResult.matchedCount)
+					throw new Error("this module is not exist!!");
+				if (!updateResult.modifiedCount)
+					throw new Error("deleting is failed!!");
+				break;
+
+			case "td":
+				updateResult = await TDDoc.updateOne(
+					{
+						module: String(formValues.module),
+						semester: String(formValues.semester),
+					},
+					{
+						$push: {
+							docs: {
+								title: formValues.title,
+								type: formValues.type,
+								doc: docURL,
+							},
+						},
+					}
+				);
+				if (!updateResult.matchedCount)
+					throw new Error("this module is not exist!!");
+				if (!updateResult.modifiedCount)
+					throw new Error("deleting is failed!!");
+				break;
+			default:
+				throw new Error("this session is not supported!!");
+		}
+		return { success: true };
+	} catch (error: any) {
+		throw new Error(error.message);
 	}
 }
-///
-
-export { uploadFile };
+export { uploadToDb };

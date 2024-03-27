@@ -32,8 +32,9 @@ const docSchema = new mongoose.Schema({
 ///
 
 // models
-const CourDoc = mongoose.model("CourDoc", docSchema);
-const TDDoc = mongoose.model("TDDoc", docSchema);
+const CourDoc =
+	mongoose.models["CourDoc"] || mongoose.model("CourDoc", docSchema);
+const TDDoc = mongoose.models["TDDoc"] || mongoose.model("TDDoc", docSchema);
 ///
 
 export { CourDoc, TDDoc };
