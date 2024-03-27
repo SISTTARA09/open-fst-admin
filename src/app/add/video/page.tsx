@@ -1,6 +1,6 @@
 "use client";
 import { VideoFormFields } from "@/types/forms";
-import React, { LegacyRef, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 /// imports
 
@@ -112,12 +112,21 @@ const AddSingleVideo = () => {
 					{/* start session  */}
 					<div className="field-container">
 						<label htmlFor="session">session</label>
-						<select name="session" id="session">
+						<select
+							{...register("session", {
+								validate: {
+									blackList: function (fieldValue) {
+										return fieldValue !== "session" || "choose a session!!";
+									},
+								},
+							})}
+							id="session"
+						>
 							<option hidden>session</option>
 							<option value="cour">cour</option>
 							<option value="td">td</option>
 						</select>
-						<p className="error session"></p>
+						<p className="error"> {errors.session?.message} </p>
 					</div>
 					{/* end session  */}
 				</div>
@@ -144,7 +153,7 @@ const AddSingleVideo = () => {
 
 				{/* start path */}
 				<div className="field-container">
-					<label htmlFor="path">path path</label>
+					<label htmlFor="path">path</label>
 					<input
 						type="text"
 						{...register("path", {
