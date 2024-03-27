@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 
 // schema
 const playListSchema = new mongoose.Schema({
-	branches: {
-		type: Array(String),
-		required: [true, "Enter wich branches!!"],
+	branch: {
+		type: String,
+		required: [true, "Enter wich branch!!"],
 	},
 	module: {
 		type: String,
@@ -15,10 +15,11 @@ const playListSchema = new mongoose.Schema({
 		type: String,
 		required: [true, "enter semester name"],
 	},
-	owner: String,
+	owner: {
+		type: String,
+	},
 	description: {
 		type: String,
-		required: [true, "Enter a description for the playlist"],
 	},
 	videos: {
 		type: Array({
@@ -31,6 +32,7 @@ const playListSchema = new mongoose.Schema({
 				required: [true, "enter the video path!!"],
 			},
 		}),
+		default: [],
 	},
 });
 ///

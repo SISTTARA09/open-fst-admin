@@ -3,13 +3,9 @@ import mongoose from "mongoose";
 
 // schema
 const docSchema = new mongoose.Schema({
-	isNewDoc: {
-		type: Boolean,
-		required: [true, "is it new !!"],
-	},
-	branches: {
-		type: Array(String),
-		required: [true, "wich branches!!"],
+	branch: {
+		type: String,
+		required: [true, "wich branch!!"],
 	},
 	semester: {
 		type: String,
@@ -19,13 +15,16 @@ const docSchema = new mongoose.Schema({
 		type: String,
 		required: [true, "enter the module!!"],
 	},
-	docs: [
-		{
-			title: { type: String },
-			doc: { type: String },
-			type: { type: String },
-		},
-	],
+	docs: {
+		type: [
+			{
+				title: { type: String },
+				doc: { type: String },
+				type: { type: String },
+			},
+		],
+		default: [],
+	},
 
 	prof: String,
 });

@@ -1,48 +1,45 @@
 "use client";
-import { DocFormFields } from "@/types/forms";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-/// imports
 
-const AddSingleDoc = () => {
-	const [file, setFile] = useState<File | any>();
+interface DocsModule {
+	branch: "branch" | "mip" | "bcg" | "gegm" | string[];
+	semester: "semester" | "s1" | "s2" | "s3" | "s4";
+	session: "session" | "cour" | "td";
+	module: string;
+	prof?: string;
+}
+
+type Doc = {
+	title: string;
+	doc: string;
+	type: string;
+};
+
+const AddDocsModule = () => {
 	const [resMsg, setResMsg] = useState<string>("");
-	const { register, formState, handleSubmit } = useForm<DocFormFields>();
-	const { errors } = formState;
 	const formRef = useRef<HTMLFormElement | null>(null);
-	///
+	const { register, formState, handleSubmit } = useForm<DocsModule>();
+	const { errors } = formState;
+	/// states
 
 	async function onSubmit() {
-		if (!file) return;
 		const form: any = formRef.current;
-		const data = new FormData(form);
-		try {
-			const response = await fetch("/add/doc/api", {
-				method: "POST",
-				body: data,
-			});
-			const resData = await response.json();
-			setResMsg(resData.message);
-		} catch (error: { message: string } | any) {
-			setResMsg(error.message);
-		}
-	}
-	function handleChange(e: React.FormEvent<HTMLFormElement>) {
-		const formFileds = new FormData(e.currentTarget);
-		const formValues = Object.fromEntries(formFileds);
-		setFile(formValues.doc);
+		const formData = new FormData(form);
+		const response = await fetch("/add/docs/api", {
+			method: "POST",
+			body: formData,
+		});
+		const data = await response.json();
+		setResMsg(data.message);
+		return;
 	}
 
 	return (
 		<>
 			<h2> Add a doc</h2>
 
-			<form
-				className="form"
-				ref={formRef}
-				onSubmit={handleSubmit(onSubmit)}
-				onChange={(e) => handleChange(e)}
-			>
+			<form className="form" ref={formRef} onSubmit={handleSubmit(onSubmit)}>
 				<div className="flex gap-3 *:w-full">
 					{/* start branch  */}
 					<div className="field-container">
@@ -138,63 +135,23 @@ const AddSingleDoc = () => {
 					{/* end session  */}
 				</div>
 
-				{/* start title  */}
+				{/* start profs */}
 				<div className="field-container">
-					<label htmlFor="title">title</label>
+					<label htmlFor="prof">prof (optional)</label>
 					<input
 						type="text"
-						{...register("title", {
+						{...register("prof", {
 							required: {
 								value: true,
-								message: "Enter the title!!",
+								message: "Enter the prof!!",
 							},
 						})}
-						id="title"
-						placeholder="document title"
-					/>
-					<p className="error">
-						{errors.title && String(errors.title.message)}
-					</p>
-				</div>
-				{/* end title  */}
-
-				{/* start type  */}
-				<div className="field-container">
-					<label htmlFor="type">type</label>
-					<select
-						{...register("type", {
-							required: {
-								value: true,
-								message: "Enter the type!!",
-							},
-						})}
-						id="type"
-					>
-						<option hidden>type</option>
-						<option value="pdf">pdf</option>
-						<option value="img">img</option>
-					</select>
-					<p className="error">{errors.type && String(errors.type.message)}</p>
-				</div>
-				{/* end type  */}
-
-				{/* start docs */}
-				<div className="field-container">
-					<label htmlFor="doc">doc</label>
-					<input
-						type="file"
-						{...register("doc", {
-							required: {
-								value: true,
-								message: "Enter the doc!!",
-							},
-						})}
-						id="doc"
+						id="prof"
 						multiple={false}
 					/>
-					<p className="error">{errors.doc && String(errors.doc.message)}</p>
+					<p className="error">{errors.prof && String(errors.prof.message)}</p>
 				</div>
-				{/* end docs */}
+				{/* end profs */}
 
 				<button type="submit">submit</button>
 			</form>
@@ -203,4 +160,4 @@ const AddSingleDoc = () => {
 	);
 };
 
-export default AddSingleDoc;
+export default AddDocsModule;
